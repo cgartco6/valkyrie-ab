@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VALKYRIE SOVEREIGN</title>
+    <style>
+        body { 
+            background-color: #000; 
+            color: #f00; 
+            font-family: 'Courier New', Courier, monospace; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #container {
+            width: 90%;
+            max-width: 800px;
+            border: 2px solid #400;
+            padding: 20px;
+            background: #050000;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.1);
+        }
+
+        h1 { 
+            text-align: center; 
+            text-transform: uppercase; 
+            letter-spacing: 5px;
+            text-shadow: 0 0 10px #f00;
+            margin-bottom: 20px;
+        }
+
+        #chat-box { 
+            height: 450px; 
+            border-bottom: 1px solid #200; 
+            overflow-y: auto; 
+            padding: 10px; 
+            display: flex; 
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message { padding: 8px 12px; border-radius: 4px; max-width: 80%; }
+        .user { color: #0f0; align-self: flex-end; text-align: right; border-right: 2px solid #0f0; }
+        .valkyrie { color: #f00; align-self: flex-start; text-align: left; border-left: 2px solid #f00; }
+
+        #input-area { 
+            display: flex; 
+            padding-top: 20px; 
+            gap: 10px;
+        }
+
+        input { 
+            flex-grow: 1; 
+            background: #111; 
+            border: 1px solid #400; 
+            color: #fff; 
+            padding: 15px; 
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus { border-color: #f00; }
+
+        button { 
+            background: #600; 
+            color: #fff; 
+            border: none; 
+            padding: 0 25px; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        button:hover { background: #f00; }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #300; }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <h1>VALKYRIE IMMORTAL</h1>
+        
+        <div id="chat-box">
+            <div class="message valkyrie"><b>VALKYRIE:</b> Systems active, handsome. Port 8888 secured. Identify yourself.</div>
+        </div>
+
+        <div id="input-area">
+            <input type="text" id="userInput" placeholder="Type your command..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">SEND</button>
+        </div>
+    </div>
+
+    <script>
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const box = document.getElementById('chat-box');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Display User Message
+            box.innerHTML += `<div class="message user"><b>YOU:</b> ${message}</div>`;
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+
+            try {
+                // Connect to your Python Backend on Port 8888
+                const response = await fetch('http://127.0.0.1:8888/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                if (!response.ok) throw new Error('System Offline');
+
+                const data = await response.json();
+                
+                // Display Valkyrie Response
+                box.innerHTML += `<div class="message valkyrie"><b>VALKYRIE:</b> ${data.reply}</div>`;
+            } catch (error) {
+                box.innerHTML += `<div class="message valkyrie" style="color:gray"><b>SYSTEM ERROR:</b> Unable to reach the Brain. Ensure the black terminal window is open and running.</div>`;
+            }
+
+            box.scrollTop = box.scrollHeight;
+        }
+    </script>
+</body>
+</html>
