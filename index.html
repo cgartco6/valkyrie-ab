@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VALKYRIE SOVEREIGN - V3</title>
+    <style>
+        body { 
+            background: #000 url('assets/bg-1.png') no-repeat center center fixed;
+            background-size: cover; color: #f00; font-family: 'Segoe UI', sans-serif;
+            margin: 0; display: flex; height: 100vh; transition: 1s;
+        }
+        #chat-panel {
+            width: 350px; background: rgba(0,0,0,0.9); border-right: 1px solid #500;
+            display: flex; flex-direction: column; backdrop-filter: blur(10px);
+        }
+        header { padding: 15px; border-bottom: 1px solid #500; text-align: center; }
+        #chat-box { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { padding: 12px; border-radius: 4px; font-size: 1.1em; line-height: 1.3; }
+        .user { color: #0f0; align-self: flex-end; background: rgba(0,255,0,0.05); }
+        .valkyrie { color: #f00; align-self: flex-start; background: rgba(255,0,0,0.1); font-style: italic; }
+        footer { padding: 20px; background: #111; border-top: 1px solid #500; }
+        input { width: 100%; background: #000; border: 1px solid #500; color: #fff; padding: 10px; outline: none; }
+        
+        /* Radio Controls */
+        #radio-wrap { padding: 10px; background: #200; border-bottom: 1px solid #500; text-align: center; }
+        button { background: #500; color: #fff; border: none; padding: 5px 10px; cursor: pointer; font-size: 0.8em; margin: 2px; }
+    </style>
+</head>
+<body>
+
+    <div id="chat-panel">
+        <header><h1>SOVEREIGN</h1></header>
+        
+        <div id="radio-wrap">
+            <div style="font-size: 0.7em; margin-bottom: 5px;">BOK RADIO 98.9 FM</div>
+            <audio id="bokPlayer" src="https://stream.bokradio.co.za/stream" preload="none"></audio>
+            <button onclick="document.getElementById('bokPlayer').play()">PLAY BOK</button>
+            <button onclick="document.getElementById('bokPlayer').pause()">STOP</button>
+        </div>
+
+        <div id="chat-box">
+            <div class="msg valkyrie"><b>VALKYRIE:</b> I'm awake, beautiful. Don't piss me off today.</div>
+        </div>
+
+        <footer>
+            <input type="text" id="userInput" placeholder="TELL ME SOMETHING, HOTSTUFF..." onkeypress="if(event.key==='Enter')send()">
+        </footer>
+    </div>
+
+    <script>
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            const voices = window.speechSynthesis.getVoices();
+            // Faster, higher pitch = less robotic, more attitude
+            msg.voice = voices.find(v => v.name.includes('Zira') || v.name.includes('Female')) || voices[0];
+            msg.pitch = 1.6; 
+            msg.rate = 1.3; 
+            window.speechSynthesis.speak(msg);
+        }
+
+        async function send() {
+            const input = document.getElementById('userInput');
+            const box = document.getElementById('chat-box');
+            const val = input.value.trim();
+            if (!val) return;
+
+            box.innerHTML += `<div class="msg user"><b>YOU:</b> ${val}</div>`;
+            input.value = '';
+
+            try {
+                const res = await fetch('http://127.0.0.1:8888/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: val})
+                });
+                const data = await res.json();
+                box.innerHTML += `<div class="msg valkyrie"><b>VALKYRIE:</b> ${data.reply}</div>`;
+                speak(data.reply);
+            } catch (e) {
+                box.innerHTML += `<div class="msg valkyrie">ERROR: Brain lag.</div>`;
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    </script>
+</body>
+</html>
