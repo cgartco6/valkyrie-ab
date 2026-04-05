@@ -1,0 +1,6 @@
+ollama
+cryptography
+requests
+python-dotenv
+flask
+edge-tts
