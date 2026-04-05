@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VALKYRIE SOVEREIGN - V3 IMMORTAL</title>
+    <style>
+        body { 
+            background-color: #000; 
+            /* Background Cycle - Ensure files are in C:\valkyrie\assets\ */
+            background-image: url('assets/bg-1.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #f00; 
+            font-family: 'Courier New', Courier, monospace; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0;
+            overflow: hidden;
+            transition: background-image 1s ease-in-out;
+        }
+
+        #container {
+            width: 95%; /* Increased width */
+            max-width: 1100px; /* Wider Command Center */
+            border: 2px solid #900;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.85); /* Slightly more transparent to see BG */
+            box-shadow: 0 0 60px rgba(255, 0, 0, 0.4);
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        h1 { 
+            text-align: center; 
+            letter-spacing: 12px;
+            text-shadow: 0 0 20px #f00;
+            color: #ff3333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        #chat-box { 
+            height: 60vh; /* Dynamic height based on screen */
+            overflow-y: auto; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column;
+            gap: 15px;
+            background: rgba(10, 0, 0, 0.6);
+            border: 1px solid #400;
+        }
+
+        .message { padding: 15px 20px; border-radius: 5px; font-size: 1.2em; line-height: 1.4; max-width: 80%; }
+        .user { color: #0f0; align-self: flex-end; text-align: right; border-right: 5px solid #0f0; background: rgba(0, 255, 0, 0.1); }
+        .valkyrie { color: #f00; align-self: flex-start; text-align: left; border-left: 5px solid #f00; background: rgba(255, 0, 0, 0.15); font-style: italic; }
+
+        #input-area { display: flex; padding-top: 25px; gap: 15px; }
+
+        input { 
+            flex-grow: 1; 
+            background: #000; 
+            border: 2px solid #800; 
+            color: #fff; 
+            padding: 20px; 
+            font-size: 20px;
+            outline: none;
+        }
+
+        button { 
+            background: #b00; 
+            color: #fff; 
+            border: none; 
+            padding: 0 50px; 
+            cursor: pointer; 
+            font-weight: bold;
+            font-size: 1.2em;
+            text-transform: uppercase;
+        }
+
+        button:hover { background: #f00; box-shadow: 0 0 30px #f00; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #f00; }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <h1>VALKYRIE IMMORTAL</h1>
+        
+        <div id="chat-box">
+            <div class="message valkyrie"><b>VALKYRIE:</b> Systems locked and loaded, handsome. Port 8888 is hot. What's the move?</div>
+        </div>
+
+        <div id="input-area">
+            <input type="text" id="userInput" placeholder="GIVE ME A COMMAND, BEAUTIFUL..." onkeypress="if(event.key==='Enter')sendMessage()">
+            <button onclick="sendMessage()">EXECUTE</button>
+        </div>
+    </div>
+
+    <script>
+        // SPUNKY & SEXY VOICE ENGINE
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voices = window.speechSynthesis.getVoices();
+
+            // Force a high-quality female voice
+            let selectedVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Google UK English Female')) || voices[0];
+            
+            utterance.voice = selectedVoice;
+            utterance.pitch = 1.4; // High and snappy
+            utterance.rate = 1.1;  // Fast and confident
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Background Cycle Logic
+        let currentBg = 1;
+        function cycleBackground() {
+            currentBg = currentBg === 1 ? 2 : 1;
+            document.body.style.backgroundImage = `url('assets/bg-${currentBg}.jpg')`;
+        }
+        setInterval(cycleBackground, 30000); // Change every 30 seconds
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const box = document.getElementById('chat-box');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            box.innerHTML += `<div class="message user"><b>YOU:</b> ${message}</div>`;
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+
+            try {
+                const response = await fetch('http://127.0.0.1:8888/chat',, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                box.innerHTML += `<div class="message valkyrie"><b>VALKYRIE:</b> ${data.reply}</div>`;
+                speak(data.reply); 
+
+            } catch (error) {
+                box.innerHTML += `<div class="message valkyrie" style="color:gray"><b>SYSTEM ERROR:</b> Terminal connection severed.</div>`;
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+        
+        window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+    </script>
+</body>
+</html>
