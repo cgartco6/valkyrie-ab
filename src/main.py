@@ -30,7 +30,8 @@ def chat():
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_input}
             ],
-            model="llama3-70b-8192", 
+            model="llama-3.3-70b-versatile",
+            , 
             temperature=0.9,
             max_tokens=80,
         )
