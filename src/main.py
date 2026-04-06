@@ -11,6 +11,11 @@ CORS(app)
 # Initialize Groq with your API Key from Environment Variables
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
+# Add this above your @app.route('/chat')
+@app.route('/')
+def home():
+    return "Valkyrie System Online, Hotstuff. Don't just stand there staring."
+
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
