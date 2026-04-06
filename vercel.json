@@ -1,3 +1,7 @@
 {
-  "rewrites": [{ "source": "/api/(.*)", "destination": "/api/chat.py" }]
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/chat.py" },
+    { "source": "/(.*)", "destination": "/public/index.html" }
+  ]
 }
