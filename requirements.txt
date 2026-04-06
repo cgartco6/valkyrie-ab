@@ -4,3 +4,9 @@ requests
 python-dotenv
 flask
 edge-tts
+
+flask
+flask-cors
+groq
+python-dotenv
+gunicorn
