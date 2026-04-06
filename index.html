@@ -2,16 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VALKYRIE SOVEREIGN</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; justify-content: center; }
-        #chat-panel { width: 95%; max-width: 400px; height: 90vh; background: rgba(20,0,0,0.9); border: 1px solid #800; display: flex; flex-direction: column; margin-top: 10px; }
-        #chat-box { flex-grow: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px; border-radius: 5px; }
-        .user { color: #0f0; align-self: flex-end; background: rgba(0,255,0,0.1); }
-        .valkyrie { color: #f00; align-self: flex-start; background: rgba(255,0,0,0.1); }
-        input { width: 100%; padding: 15px; background: #111; border: none; color: #fff; border-top: 1px solid #800; }
+        body { background: #000; color: #fff; font-family: sans-serif; display: flex; justify-content: center; margin: 0; }
+        #chat-panel { width: 100%; max-width: 400px; height: 100vh; display: flex; flex-direction: column; background: #0a0a0a; border: 1px solid #400; }
+        #chat-box { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .valkyrie { color: #f00; align-self: flex-start; background: rgba(255,0,0,0.1); padding: 10px; border-radius: 5px; }
+        .user { color: #0f0; align-self: flex-end; background: rgba(0,255,0,0.1); padding: 10px; border-radius: 5px; }
+        input { padding: 20px; background: #111; border: none; border-top: 1px solid #400; color: #fff; outline: none; }
     </style>
 </head>
 <body>
@@ -24,32 +23,30 @@
         async function send() {
             const input = document.getElementById('userInput');
             const box = document.getElementById('chat-box');
-            const val = input.value;
-            if (!val) return;
-            box.innerHTML += `<div class="msg user">${val}</div>`;
+            if (!input.value.trim()) return;
+
+            const userVal = input.value;
+            box.innerHTML += `<div class="msg user">${userVal}</div>`;
             input.value = '';
 
-            const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: val })
-            });
-            const data = await res.json();
-            let reply = data.reply;
+            try {
+                // Fetch to the relative Vercel API path
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userVal })
+                });
+                const data = await res.json();
+                let reply = data.reply;
 
-            if (reply.includes("[RADIO_ON]")) {
-                window.open('https://www.bokradio.co.za/?proradio-popup=1', 'BokRadio', 'width=400,height=600');
-                reply = reply.replace("[RADIO_ON]", "📻");
-            }
-            if (reply.includes("[SEARCH:")) {
-                let q = reply.split("[SEARCH:")[1].split("]")[0];
-                window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');
-            }
-            if (reply.includes("[CALL:")) {
-                window.location.href = `tel:${reply.split("[CALL:")[1].split("]")[0]}`;
-            }
+                if (reply.includes("[RADIO_ON]")) {
+                    window.open('https://www.bokradio.co.za/?proradio-popup=1', 'BokRadio', 'width=400,height=600');
+                }
 
-            box.innerHTML += `<div class="msg valkyrie">${reply}</div>`;
+                box.innerHTML += `<div class="msg valkyrie">${reply}</div>`;
+            } catch (e) {
+                box.innerHTML += `<div class="msg valkyrie">Error: Brain offline.</div>`;
+            }
             box.scrollTop = box.scrollHeight;
         }
     </script>
