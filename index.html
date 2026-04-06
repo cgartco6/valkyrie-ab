@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VALKYRIE SOVEREIGN</title>
+    <style>
+        body { 
+            background: #000 url('assets/bg-1.png') no-repeat center center fixed;
+            background-size: cover; color: #fff; font-family: 'Segoe UI', sans-serif;
+            margin: 0; height: 100vh; display: flex;
+        }
+        #chat-panel {
+            width: 90%; max-width: 400px; height: 80vh; 
+            position: fixed; top: 20px; left: 20px;
+            background: rgba(0, 0, 0, 0.9); border: 1px solid #700;
+            display: flex; flex-direction: column; backdrop-filter: blur(15px);
+        }
+        header { padding: 15px; border-bottom: 1px solid #500; text-align: center; background: rgba(60,0,0,0.6); }
+        #chat-box { flex-grow: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .msg { padding: 12px; border-radius: 5px; font-size: 0.95em; }
+        .user { color: #0f0; align-self: flex-end; border-right: 4px solid #0f0; background: rgba(0,255,0,0.05); }
+        .valkyrie { color: #f00; align-self: flex-start; border-left: 4px solid #f00; background: rgba(255,0,0,0.1); }
+        footer { padding: 15px; background: #000; border-top: 1px solid #500; }
+        input { width: 100%; background: #000; border: 1px solid #600; color: #fff; padding: 15px; outline: none; }
+    </style>
+</head>
+<body>
+    <audio id="bokPlayer" src="https://stream.bokradio.co.za/stream"></audio>
+    <div id="chat-panel">
+        <header><h1 style="margin:0;color:#f00;letter-spacing:4px;">SOVEREIGN</h1></header>
+        <div id="chat-box"><div class="msg valkyrie">Ready for orders, beautiful.</div></div>
+        <footer><input type="text" id="userInput" placeholder="COMMAND ME..." onkeypress="if(event.key==='Enter')send()"></footer>
+    </div>
+
+    <script>
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.pitch = 1.3; msg.rate = 1.2; 
+            window.speechSynthesis.speak(msg);
+        }
+
+        async function send() {
+            const input = document.getElementById('userInput');
+            const box = document.getElementById('chat-box');
+            const val = input.value.trim();
+            if (!val) return;
+
+            box.innerHTML += `<div class="msg user"><b>YOU:</b> ${val}</div>`;
+            input.value = '';
+
+            try {
+                // Ensure this matches your Render URL
+                const res = await fetch('https://valkyrie-2.onrender.com/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: val })
+                });
+                const data = await res.json();
+                let reply = data.reply;
+
+                // --- TOOL LOGIC ---
+                if (reply.includes("[SEARCH:")) {
+                    let q = reply.split("[SEARCH:")[1].split("]")[0];
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');
+                    reply = reply.replace(/\[SEARCH:.*?\]/, "🌐");
+                }
+                if (reply.includes("[CALL:")) {
+                    let num = reply.split("[CALL:")[1].split("]")[0];
+                    window.location.href = `tel:${num}`;
+                    reply = reply.replace(/\[CALL:.*?\]/, "📞");
+                }
+                if (reply.includes("[NOTE:")) {
+                    let note = reply.split("[NOTE:")[1].split("]")[0];
+                    let notes = JSON.parse(localStorage.getItem('v_notes') || "[]");
+                    notes.push(note);
+                    localStorage.setItem('v_notes', JSON.stringify(notes));
+                    reply = reply.replace(/\[NOTE:.*?\]/, "📝 (Saved)");
+                }
+                if (reply.includes("[MAPS:")) {
+                    let dest = reply.split("[MAPS:")[1].split("]")[0];
+                    window.open(`https://www.google.com/maps/search/${encodeURIComponent(dest)}`, '_blank');
+                    reply = reply.replace(/\[MAPS:.*?\]/, "📍");
+                }
+                
+                const radio = document.getElementById('bokPlayer');
+                if (reply.includes("[RADIO_ON]")) { radio.play(); reply = reply.replace("[RADIO_ON]", "📻"); }
+                if (reply.includes("[RADIO_OFF]")) { radio.pause(); reply = reply.replace("[RADIO_OFF]", "🔇"); }
+
+                box.innerHTML += `<div class="msg valkyrie"><b>VALKYRIE:</b> ${reply}</div>`;
+                speak(reply);
+            } catch (e) {
+                box.innerHTML += `<div class="msg valkyrie">ERROR: Brain offline.</div>`;
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+    </script>
+</body>
+</html>
